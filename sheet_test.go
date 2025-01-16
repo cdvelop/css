@@ -25,16 +25,17 @@ func TestVars(t *testing.T) {
 }
 `
 
-	result := generateRoot()
+	s := NewStyleSheet()
+	result := s.generateRoot()
 
 	// Verificaciones de contenido
 	if result != expected {
 		t.Errorf("error:\nresult:\n[%v]\nexpected:\n[%v]", result, expected)
 	}
 
-	Var.ColorPrimary = "#000000"
+	s.Vars.ColorPrimary = "#000000"
 	// result = css.GenerateRoot()
-	if Var.ColorPrimary != "#000000" {
+	if s.Vars.ColorPrimary != "#000000" {
 		t.Errorf("error:\nresult:\n[%v]\nexpected:\n[%v]", result, expected)
 	}
 

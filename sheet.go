@@ -8,16 +8,10 @@ import (
 	"unicode"
 )
 
-// Structure to handle multiple classes
-type stylesheet struct {
-	classes []*class
-}
-
-// NewStyleSheet creates and returns a new stylesheet instance
-func NewStyleSheet() *stylesheet {
-	return &stylesheet{
-		classes: []*class{},
-	}
+// Structure to handle multiple classes and CSS variables
+type StyleSheet struct {
+	selectors []*selector
+	Vars      cssVars
 }
 
 type cssVars struct {
@@ -44,24 +38,44 @@ type cssVars struct {
 	externalVars map[string]string
 }
 
-var Var = cssVars{
-	FontSizeNormal:  "1.1rem",
-	FontSizeSmall:   ".6rem",
-	ColorPrimary:    "#ffffff",
-	ColorSecondary:  "#3f88bf",
-	ColorTertiary:   "#c2c1c1",
-	ColorQuaternary: "#000000",
-	ColorGray:       "#e9e9e9",
-	ColorSelection:  "#ff9300",
-	ColorHover:      "#ff95008e",
-	ColorSuccess:    "#aadaff7c",
-	ColorError:      "#f20707",
-	MenuSize:        "6vh",
-	ContentHeight:   "94vh",
-	ContentWidth:    "100vw",
-	TransitionWait:  "0s",
+// NewStyleSheet creates and returns a new StyleSheet instance
+func NewStyleSheet() *StyleSheet {
+	return &StyleSheet{
+		selectors: []*selector{},
+		Vars: cssVars{
+			FontSizeNormal:  "1.1rem",
+			FontSizeSmall:   ".6rem",
+			ColorPrimary:    "#ffffff",
+			ColorSecondary:  "#3f88bf",
+			ColorTertiary:   "#c2c1c1",
+			ColorQuaternary: "#000000",
+			ColorGray:       "#e9e9e9",
+			ColorSelection:  "#ff9300",
+			ColorHover:      "#ff95008e",
+			ColorSuccess:    "#aadaff7c",
+			ColorError:      "#f20707",
+			MenuSize:        "6vh",
+			ContentHeight:   "94vh",
+			ContentWidth:    "100vw",
+			TransitionWait:  "0s",
+			externalVars:    map[string]string{},
+		},
+	}
+}
 
-	externalVars: map[string]string{},
+// SetVariable sets a CSS variable value
+func (s *StyleSheet) SetVariable(name, value string) {
+	s.Vars.AddVariable(name, value)
+}
+
+// obtener el valor de una variable (en formato CSS: var(--miVar))
+func (s *StyleSheet) GetVariable(name string) string {
+	return `var(` + name + `)`
+}
+
+// Variables returns the cssVars instance
+func (s *StyleSheet) Variables() *cssVars {
+	return &s.Vars
 }
 
 // agregar una variable CSS externa
@@ -69,18 +83,13 @@ func (c *cssVars) AddVariable(name, value string) {
 	c.externalVars[name] = value
 }
 
-// obtener el valor de una variable (en formato CSS: var(--miVar))
-func GetVariable(name string) string {
-	return `var(` + name + `)`
-}
-
 // generateRoot genera la clase ":root" con todas las variables CSS
-func generateRoot() string {
+func (s *StyleSheet) generateRoot() string {
 	var sb strings.Builder
 	sb.WriteString(":root {\n")
 
 	// Usa reflect para iterar sobre los campos de cssVars
-	v := reflect.ValueOf(Var)
+	v := reflect.ValueOf(s.Vars)
 	for i := 0; i < v.NumField(); i++ {
 		fieldName := v.Type().Field(i).Name
 		fieldValue := v.Field(i).String()
@@ -93,24 +102,29 @@ func generateRoot() string {
 		sb.WriteString("    --" + fieldName + ": " + fieldValue + ";\n")
 	}
 
+	// Agregar variables externas
+	for name, value := range s.Vars.externalVars {
+		sb.WriteString("    --" + name + ": " + value + ";\n")
+	}
+
 	sb.WriteString("}\n")
 	return sb.String()
 }
 
-// Method to generate the entire stylesheet and optionally save it to a file
+// Method to generate the entire StyleSheet and optionally save it to a file
 // Example usage:
 //
 //	sheet := NewStyleSheet()
-//	css, err := sheet.Generate()              // Generate stylesheet string only
+//	css, err := sheet.Generate()              // Generate StyleSheet string only
 //	css, err := sheet.Generate("styles.css")  // Generate and save to file
-func (s *stylesheet) Generate(paths ...string) (string, error) {
+func (s *StyleSheet) Generate(paths ...string) (string, error) {
 	// Use strings.Builder with initial capacity
 	var stylesheetBuilder strings.Builder
 
-	stylesheetBuilder.WriteString(generateRoot())
+	stylesheetBuilder.WriteString(s.generateRoot())
 
-	for _, class := range s.classes {
-		stylesheetBuilder.WriteString(class.GenerateCSS())
+	for _, sel := range s.selectors {
+		stylesheetBuilder.WriteString(sel.GenerateCSS())
 	}
 
 	css := stylesheetBuilder.String()

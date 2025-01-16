@@ -4,34 +4,48 @@ import (
 	"strings"
 )
 
-// CSS class structure that maintains order
-type class struct {
+// class structure that maintains order
+type selector struct {
 	Name       string   //eg: "normal", "border", "width-auto"
 	Properties []string //eg: "width: 100%", "min-width: 100%"
 }
 
-// Method to add a class to the stylesheet
-func (s *stylesheet) AddClass(name string) *class {
+// Method to add a class to the StyleSheet
+// Examples:
+// - AddSelector(".my-class") -> for class selectors
+// - AddSelector("#my-id") -> for ID selectors
+// - AddSelector("div") -> for element selectors
+// - AddSelector("div > p") -> for child selectors
+// - AddSelector("div.my-class") -> for element with class
+func (s *StyleSheet) AddSelector(name string) *selector {
 	// Check if the class already exists
-	for _, existingClass := range s.classes {
+	for _, existingClass := range s.selectors {
 		if existingClass.Name == name {
 			return existingClass
 		}
 	}
 
-	new := &class{
+	new := &selector{
 		Name:       name,
 		Properties: []string{},
 	}
 
-	s.classes = append(s.classes, new)
+	s.selectors = append(s.selectors, new)
 	return new
 }
 
 // Method to add a CSS property with multiple values
 // Example: AddProperty("margin", "10px", "20px") -> margin: 10px 20px
-func (c *class) AddProperty(key string, values ...string) *class {
+func (c *selector) AddProperty(key string, values ...string) *selector {
 	property := key + ": " + strings.Join(values, " ")
+
+	// Check if property already exists
+	for _, prop := range c.Properties {
+		if prop == property {
+			return c
+		}
+	}
+
 	c.Properties = append(c.Properties, property)
 	return c
 }
@@ -42,7 +56,7 @@ func (c *class) AddProperty(key string, values ...string) *class {
 // }
 
 // Method to generate CSS respecting insertion order
-func (c *class) GenerateCSS() string {
+func (c *selector) GenerateCSS() string {
 	var cssBuilder strings.Builder
 
 	// Pre-estimate size
@@ -52,7 +66,6 @@ func (c *class) GenerateCSS() string {
 	}
 	cssBuilder.Grow(estimatedSize)
 
-	cssBuilder.WriteString(".")
 	cssBuilder.WriteString(c.Name)
 	cssBuilder.WriteString(" {\n")
 

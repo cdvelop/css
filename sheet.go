@@ -8,15 +8,14 @@ import (
 	"unicode"
 )
 
-var ss *stylesheet
-
 // Structure to handle multiple classes
 type stylesheet struct {
 	classes []*class
 }
 
-func init() {
-	ss = &stylesheet{
+// NewStyleSheet creates and returns a new stylesheet instance
+func NewStyleSheet() *stylesheet {
+	return &stylesheet{
 		classes: []*class{},
 	}
 }
@@ -101,15 +100,16 @@ func generateRoot() string {
 // Method to generate the entire stylesheet and optionally save it to a file
 // Example usage:
 //
-//	css, err := GenerateStylesheet()              // Generate stylesheet string only
-//	css, err := GenerateStylesheet("styles.css")  // Generate and save to file
-func GenerateStylesheet(paths ...string) (string, error) {
+//	sheet := NewStyleSheet()
+//	css, err := sheet.Generate()              // Generate stylesheet string only
+//	css, err := sheet.Generate("styles.css")  // Generate and save to file
+func (s *stylesheet) Generate(paths ...string) (string, error) {
 	// Use strings.Builder with initial capacity
 	var stylesheetBuilder strings.Builder
 
 	stylesheetBuilder.WriteString(generateRoot())
 
-	for _, class := range ss.classes {
+	for _, class := range s.classes {
 		stylesheetBuilder.WriteString(class.GenerateCSS())
 	}
 

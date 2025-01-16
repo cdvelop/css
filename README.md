@@ -26,23 +26,21 @@ import (
 )
 
 func main() {
-    // Create stylesheet
-    stylesheet := &css.Stylesheet{}
 
     // Create button class
-    buttonClass := stylesheet.AddClass("btn-primary").
+     css.AddClass("btn-primary").
         AddProperty("font-family", "Arial", "Helvetica", "sans-serif").
         AddProperty("background", "linear-gradient(to right)", "blue", "purple").
         AddProperty("padding", "10px", "15px").
         AddProperty("box-shadow", "0 2px 4px rgba(0,0,0,0.1)")
 
     // Create card class  
-    cardClass := stylesheet.AddClass("card").
+     css.AddClass("card").
         AddProperty("border", "1px", "solid", "#ccc").
         AddProperty("transition", "all", "0.3s", "ease-in-out")
 
     // Generate CSS
-    css := stylesheet.GenerateStylesheet()
+    css,_ := css.GenerateStylesheet()
     fmt.Println(css)
 }
 ```

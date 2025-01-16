@@ -11,9 +11,9 @@ type class struct {
 }
 
 // Method to add a class to the stylesheet
-func AddClass(name string) *class {
+func (s *stylesheet) AddClass(name string) *class {
 	// Check if the class already exists
-	for _, existingClass := range ss.classes {
+	for _, existingClass := range s.classes {
 		if existingClass.Name == name {
 			return existingClass
 		}
@@ -24,7 +24,7 @@ func AddClass(name string) *class {
 		Properties: []string{},
 	}
 
-	ss.classes = append(ss.classes, new)
+	s.classes = append(s.classes, new)
 	return new
 }
 

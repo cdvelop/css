@@ -12,17 +12,18 @@ func TestCSSGeneration(t *testing.T) {
 	// Test case 1: Basic CSS Generation
 	t.Run("Basic CSS Generation", func(t *testing.T) {
 
-		css.AddClass("btn-primary").
+		sheet := css.NewStyleSheet()
+		sheet.AddClass("btn-primary").
 			AddProperty("font-family", "Arial", "Helvetica", "sans-serif").
 			AddProperty("background", "linear-gradient(to right)", "blue", "purple").
 			AddProperty("padding", "10px", "15px").
 			AddProperty("box-shadow", "0 2px 4px rgba(0,0,0,0.1)")
 
-		css.AddClass("card").
+		sheet.AddClass("card").
 			AddProperty("border", "1px", "solid", "#ccc").
 			AddProperty("transition", "all", "0.3s", "ease-in-out")
 
-		cssResult, err := css.GenerateStylesheet()
+		cssResult, err := sheet.Generate()
 		if err != nil {
 			t.Errorf("Error generating stylesheet: %v", err)
 		}
@@ -49,8 +50,8 @@ func TestCSSGeneration(t *testing.T) {
 	// Test case 2: Property Order Verification
 	t.Run("Property Order Preservation", func(t *testing.T) {
 
-		result := css.AddClass("test-order").
-
+		sheet := css.NewStyleSheet()
+		result := sheet.AddClass("test-order").
 			// Properties in a specific order
 			AddProperty("display", "flex").
 			AddProperty("justify-content", "center").
@@ -78,7 +79,8 @@ func TestCSSGeneration(t *testing.T) {
 
 	// Test case 3: Multiple Values
 	t.Run("Multiple Values", func(t *testing.T) {
-		result := css.AddClass("multi-value").
+		sheet := css.NewStyleSheet()
+		result := sheet.AddClass("multi-value").
 			AddProperty("background", "linear-gradient(45deg)", "red", "blue").
 			GenerateCSS()
 
@@ -90,13 +92,14 @@ func TestCSSGeneration(t *testing.T) {
 
 	// Test case 4: Complete stylesheet
 	t.Run("Full stylesheet Generation", func(t *testing.T) {
-		css.AddClass("button").
+		sheet := css.NewStyleSheet()
+		sheet.AddClass("button").
 			AddProperty("color", "white")
 
-		css.AddClass("card").
+		sheet.AddClass("card").
 			AddProperty("border", "1px", "solid", "black")
 
-		ssResult, err := css.GenerateStylesheet()
+		ssResult, err := sheet.Generate()
 		if err != nil {
 			t.Errorf("Error generating stylesheet: %v", err)
 		}
@@ -118,15 +121,16 @@ func TestCSSGeneration(t *testing.T) {
 
 // Example of benchmark execution for performance
 func BenchmarkCSSGeneration(b *testing.B) {
+	sheet := css.NewStyleSheet()
 	// Prepare a set of classes
 	for i := 0; i < 100; i++ {
-		css.AddClass(fmt.Sprintf("class-%d", i)).
+		sheet.AddClass(fmt.Sprintf("class-%d", i)).
 			AddProperty("color", "black").
 			AddProperty("margin", "10px")
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		css.GenerateStylesheet()
+		sheet.Generate()
 	}
 }
